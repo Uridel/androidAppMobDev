@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 public class CreateShowActivity extends AppCompatActivity {
-    private Button btn;
     private EditText showDescription;
     private DataSource datasource;
 

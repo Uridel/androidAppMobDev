@@ -37,14 +37,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
-        <Button
-            android:id="@+id/details_updateButton"
-            style="?android:attr/buttonStyleSmall"
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:onClick="addListItem"
-            android:text="Update" />
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            android:layout_alignParentBottom="true"
+            android:layout_alignRight="@+id/main_list"
+            android:layout_alignEnd="@+id/main_list"
+            android:src="@android:drawable/ic_input_add" />
 
     </LinearLayout>
 

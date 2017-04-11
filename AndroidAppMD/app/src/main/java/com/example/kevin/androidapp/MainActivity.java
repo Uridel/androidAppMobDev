@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -12,21 +14,24 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private Button btn;
-    private ListView listView;
-    public static final String EXTRA_SHOW = "extraShow";
 
-    public static final String EXTRA_SHOW_ID = "extraShowId";
 
-    private ArrayAdapter<Show> showArrayAdapter;
+    private List<Show> shows;
+    private ShowsAdapter showAdapter;
+    private RecyclerView recyclerView;
     private DataSource datasource;
+
+    public static final String INTENT_DETAIL_ROW_NUMBER = "Row number";
+    public static final String INTENT_DETAIL_REMINDER_TEXT = "Reminder text";
+    public static final int REQUESTCODE = 2;
+    public static final String EXTRA_SHOW_ID = "extraShowId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,26 +40,18 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        listView = (ListView) findViewById(R.id.main_list);
-        TextView emptyView = (TextView) findViewById(R.id.main_list_empty);
-            listView.setEmptyView(emptyView);
-
-
         datasource = new DataSource(this);
-        List<Show> shows = datasource.getAllShows();
-        showArrayAdapter = new ArrayAdapter<Show>(this, android.R.layout.simple_list_item_1, shows);
-            listView.setAdapter(showArrayAdapter);
+        datasource.open();
 
-        registerForContextMenu(listView);
+        recyclerView = (RecyclerView) findViewById(R.id.main_list);
 
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(mLayoutManager);
+        //recyclerView.setAdapter(showAdapter);
 
-                Intent intent = new Intent(MainActivity.this, EditShowActivity.class);
-                intent.putExtra(MainActivity.EXTRA_SHOW_ID, (long) showArrayAdapter.getItem(position).getId());
-                startActivityForResult(intent, 2);            }
-        });
+        updateUI();
+
+        //registerForContextMenu(recyclerView);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.taskView);
             fab.setOnClickListener(new View.OnClickListener() {
@@ -63,6 +60,37 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(new Intent(MainActivity.this, CreateShowActivity.class), 1);
             }
         });
+    }
+
+    private void updateUI() {
+        shows = datasource.getAllShows();
+        if (showAdapter == null) {
+            showAdapter = new ShowsAdapter(this, shows); // the error
+            recyclerView.setAdapter(showAdapter);
+        } else {
+            showAdapter.updateList(shows);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                //Handle data
+                long showId = data.getLongExtra(EXTRA_SHOW_ID, -1);
+                if (showId != -1) {
+                    Show show = datasource.getShow(showId);
+                    shows.add(show);
+                    updateUI();
+
+                }
+            }
+        }
+        if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+                updateUI();
+            }
+        }
     }
 
     @Override
@@ -86,61 +114,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    public void updateShowListView() {
-        List<Show> shows = datasource.getAllShows();
-        showArrayAdapter = new ArrayAdapter<Show>(this, android.R.layout.simple_list_item_1, shows);
-        listView.setAdapter(showArrayAdapter);
-    }
-
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                //Handle data
-                long showId = data.getLongExtra(EXTRA_SHOW_ID, -1);
-                if (showId != -1) {
-                    Show show = datasource.getShow(showId);
-                    showArrayAdapter.add(show);
-                    updateShowListView();
-
-                }
-
-
-
-            }
-        }
-        if (requestCode == 2) {
-            if (resultCode == RESULT_OK) {
-                updateShowListView();
-            }
-        }
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.setHeaderTitle("Select The Action");
-        menu.add(0, v.getId(), 0, "Delete");
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        if (item.getTitle() == "Delete") {
-            Toast.makeText(getApplicationContext(), "Shows deleted", Toast.LENGTH_LONG).show();
-            Show show = showArrayAdapter.getItem(info.position);
-            showArrayAdapter.remove(show);
-            datasource.deleteShows(show);
-        } else {
-            return false;
-        }
-        return true;
-    }
-
-
 
 }
 

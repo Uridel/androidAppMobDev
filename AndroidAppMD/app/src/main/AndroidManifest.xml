@@ -4,23 +4,30 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:icon="@mipmap/ic_got"
+        android:label="Tv-Shows"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="My Current Tasks"
+            android:label="My shows"
             android:theme="@style/AppTheme.NoActionBar">
 
         </activity>
         <activity
+            android:name=".EditShowActivity"
+            android:label="Edit the show "
+            android:theme="@style/AppTheme.NoActionBar">
+
+        </activity>
+
+        <activity
             android:name=".CreateShowActivity"
-            android:label="Create Task"
+            android:label="Add shows"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".HomeScreen"
-            android:label="@string/title_activity_home_screen"
+            android:label="Series"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
